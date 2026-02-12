@@ -116,70 +116,62 @@
         .card-content {
             height: 100%;
             display: grid;
-            grid-template-columns: 45% 55%;
+            grid-template-columns: 35% 65%;
             gap: 0;
         }
 
         /* 左侧：角色信息 */
         .card-left {
             background: linear-gradient(135deg, rgba(201, 169, 97, 0.1) 0%, rgba(0, 0, 0, 0.8) 100%);
-            padding: 40px;
+            padding: 30px;
             display: flex;
             flex-direction: column;
-            justify-content: center;
+            justify-content: flex-start;
             border-right: 2px solid rgba(201, 169, 97, 0.3);
+            overflow-y: auto;
         }
 
         .card-left h2 {
-            font-size: 3rem;
+            font-size: 2.5rem;
             color: #c9a961;
             margin-bottom: 10px;
             text-shadow: 0 0 20px rgba(201, 169, 97, 0.5);
         }
 
         .card-left .role {
-            font-size: 1.2rem;
+            font-size: 1rem;
             color: #888;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
             font-style: italic;
         }
 
         .card-left .keywords {
             display: flex;
             flex-wrap: wrap;
-            gap: 10px;
-            margin-bottom: 30px;
+            gap: 8px;
+            margin-bottom: 0;
         }
 
         .card-left .keyword {
             background: rgba(201, 169, 97, 0.2);
-            padding: 8px 15px;
-            border-radius: 20px;
-            font-size: 0.9rem;
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-size: 0.85rem;
             border: 1px solid rgba(201, 169, 97, 0.5);
         }
 
-        .card-left .description {
-            color: #ccc;
-            line-height: 1.8;
-            font-size: 1rem;
-            max-height: 200px;
-            overflow-y: auto;
-        }
-
-        /* 右侧：设计稿展示 */
+        /* 右侧：设计稿展示 + 介绍 */
         .card-right {
             background: rgba(0, 0, 0, 0.6);
-            padding: 40px;
+            padding: 20px;
             display: flex;
-            align-items: center;
-            justify-content: center;
+            flex-direction: column;
+            gap: 15px;
             position: relative;
         }
 
         .design-preview {
-            width: 100%;
-            height: 100%;
+            flex: 1;
             border: 2px solid rgba(201, 169, 97, 0.3);
             border-radius: 10px;
             background: rgba(20, 20, 20, 0.8);
@@ -190,6 +182,7 @@
             color: #555;
             position: relative;
             overflow: hidden;
+            min-height: 0;
         }
 
         .design-preview::before {
@@ -203,6 +196,18 @@
             width: 100%;
             height: 100%;
             object-fit: contain;
+        }
+
+        .card-description {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 15px 20px;
+            border-radius: 10px;
+            border: 1px solid rgba(201, 169, 97, 0.2);
+            color: #ccc;
+            line-height: 1.6;
+            font-size: 0.95rem;
+            max-height: 80px;
+            overflow-y: auto;
         }
 
         /* 导航按钮 */
@@ -556,12 +561,12 @@
                             <div class="keywords">
                                 ${char.keywords.map(k => `<span class="keyword">${k}</span>`).join('')}
                             </div>
-                            <div class="description">${char.description}</div>
                         </div>
                         <div class="card-right">
                             <div class="design-preview">
                                 ${char.image ? `<img src="${char.image}" alt="${char.name}设计稿">` : '<span>设计稿区域（16:9）</span>'}
                             </div>
+                            <div class="card-description">${char.description}</div>
                         </div>
                     </div>
                 `;
