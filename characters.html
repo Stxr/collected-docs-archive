@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>人物设计稿 - 复国手记</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            color: #e0e0e0;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        /* 背景粒子效果 */
+        #particles {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            opacity: 0.3;
+        }
+
+        /* 主容器 */
+        .container {
+            position: relative;
+            z-index: 1;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 顶部标题 */
+        header {
+            text-align: center;
+            padding: 30px;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            border-bottom: 2px solid #c9a961;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            color: #c9a961;
+            text-shadow: 0 0 20px rgba(201, 169, 97, 0.5);
+            letter-spacing: 0.2em;
+        }
+
+        header p {
+            margin-top: 10px;
+            color: #888;
+            font-size: 0.9rem;
+        }
+
+        /* 主展示区 */
+        .main-display {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            perspective: 2000px;
+        }
+
+        /* 设计稿卡片容器 */
+        .card-container {
+            position: relative;
+            width: 90%;
+            max-width: 1200px;
+            aspect-ratio: 16 / 9;
+            transform-style: preserve-3d;
+        }
+
+        /* 设计稿卡片 */
+        .character-card {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: rgba(30, 30, 30, 0.9);
+            border-radius: 20px;
+            border: 2px solid #c9a961;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
+            overflow: hidden;
+            transform-style: preserve-3d;
+            backface-visibility: hidden;
+            transition: transform 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55),
+                        opacity 0.8s ease;
+        }
+
+        .character-card.active {
+            transform: rotateY(0deg) translateZ(0px);
+            opacity: 1;
+            z-index: 10;
+        }
+
+        .character-card.prev {
+            transform: rotateY(-90deg) translateZ(-300px);
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .character-card.next {
+            transform: rotateY(90deg) translateZ(-300px);
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* 卡片内容 */
+        .card-content {
+            height: 100%;
+            display: grid;
+            grid-template-columns: 45% 55%;
+            gap: 0;
+        }
+
+        /* 左侧：角色信息 */
+        .card-left {
+            background: linear-gradient(135deg, rgba(201, 169, 97, 0.1) 0%, rgba(0, 0, 0, 0.8) 100%);
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            border-right: 2px solid rgba(201, 169, 97, 0.3);
+        }
+
+        .card-left h2 {
+            font-size: 3rem;
+            color: #c9a961;
+            margin-bottom: 10px;
+            text-shadow: 0 0 20px rgba(201, 169, 97, 0.5);
+        }
+
+        .card-left .role {
+            font-size: 1.2rem;
+            color: #888;
+            margin-bottom: 30px;
+            font-style: italic;
+        }
+
+        .card-left .keywords {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .card-left .keyword {
+            background: rgba(201, 169, 97, 0.2);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            border: 1px solid rgba(201, 169, 97, 0.5);
+        }
+
+        .card-left .description {
+            color: #ccc;
+            line-height: 1.8;
+            font-size: 1rem;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        /* 右侧：设计稿展示 */
+        .card-right {
+            background: rgba(0, 0, 0, 0.6);
+            padding: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .design-preview {
+            width: 100%;
+            height: 100%;
+            border: 2px solid rgba(201, 169, 97, 0.3);
+            border-radius: 10px;
+            background: rgba(20, 20, 20, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: #555;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .design-preview::before {
+            content: '16:9 设计稿展示区域';
+            position: absolute;
+            font-size: 1rem;
+            opacity: 0.5;
+        }
+
+        .design-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        /* 导航按钮 */
+        .nav-button {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 60px;
+            height: 60px;
+            background: rgba(201, 169, 97, 0.3);
+            border: 2px solid #c9a961;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 20;
+            backdrop-filter: blur(5px);
+        }
+
+        .nav-button:hover {
+            background: rgba(201, 169, 97, 0.6);
+            transform: translateY(-50%) scale(1.1);
+            box-shadow: 0 0 30px rgba(201, 169, 97, 0.8);
+        }
+
+        .nav-button.prev {
+            left: 20px;
+        }
+
+        .nav-button.next {
+            right: 20px;
+        }
+
+        .nav-button svg {
+            width: 30px;
+            height: 30px;
+            fill: #c9a961;
+        }
+
+        /* 底部缩略图导航 */
+        .thumbnail-nav {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            padding: 30px;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            border-top: 2px solid rgba(201, 169, 97, 0.3);
+        }
+
+        .thumbnail {
+            width: 80px;
+            height: 80px;
+            border-radius: 10px;
+            border: 2px solid transparent;
+            background: rgba(201, 169, 97, 0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            color: #888;
+            text-align: center;
+            padding: 5px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .thumbnail::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(201, 169, 97, 0.3) 0%, transparent 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .thumbnail:hover::before {
+            opacity: 1;
+        }
+
+        .thumbnail:hover {
+            border-color: #c9a961;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(201, 169, 97, 0.5);
+        }
+
+        .thumbnail.active {
+            border-color: #c9a961;
+            background: rgba(201, 169, 97, 0.3);
+            box-shadow: 0 0 30px rgba(201, 169, 97, 0.7);
+        }
+
+        /* 加载动画 */
+        .loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #1a1a1a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            transition: opacity 0.5s ease;
+        }
+
+        .loading.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(201, 169, 97, 0.3);
+            border-top-color: #c9a961;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* 滚动条样式 */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(201, 169, 97, 0.5);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(201, 169, 97, 0.8);
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 1.8rem;
+            }
+
+            .card-content {
+                grid-template-columns: 1fr;
+                grid-template-rows: 40% 60%;
+            }
+
+            .card-left {
+                border-right: none;
+                border-bottom: 2px solid rgba(201, 169, 97, 0.3);
+            }
+
+            .card-left h2 {
+                font-size: 2rem;
+            }
+
+            .thumbnail-nav {
+                gap: 10px;
+                padding: 20px 10px;
+                flex-wrap: wrap;
+            }
+
+            .thumbnail {
+                width: 60px;
+                height: 60px;
+                font-size: 0.7rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 背景粒子 -->
+    <canvas id="particles"></canvas>
+
+    <!-- 加载动画 -->
+    <div class="loading" id="loading">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <!-- 主容器 -->
+    <div class="container">
+        <!-- 顶部标题 -->
+        <header>
+            <h1>人物设计稿</h1>
+            <p>复国手记 · 末世大唐 Seinen 风格</p>
+        </header>
+
+        <!-- 主展示区 -->
+        <div class="main-display">
+            <!-- 导航按钮 -->
+            <div class="nav-button prev" onclick="changeCharacter(-1)">
+                <svg viewBox="0 0 24 24">
+                    <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+                </svg>
+            </div>
+
+            <!-- 卡片容器 -->
+            <div class="card-container" id="cardContainer">
+                <!-- 动态生成 -->
+            </div>
+
+            <div class="nav-button next" onclick="changeCharacter(1)">
+                <svg viewBox="0 0 24 24">
+                    <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+                </svg>
+            </div>
+        </div>
+
+        <!-- 底部缩略图导航 -->
+        <div class="thumbnail-nav" id="thumbnailNav">
+            <!-- 动态生成 -->
+        </div>
+    </div>
+
+    <script>
+        // 人物数据
+        const characters = [
+            {
+                id: '01',
+                name: '龙御',
+                nameEn: 'Long Yu',
+                role: '天驱武士 · 颓废浪人',
+                keywords: ['青铜血脉', '亡国骑士', '烟鬼', '深藏不露'],
+                file: '人物设计/01_龙御.md',
+                description: '曾为唐国七义士之一，天驱武士唯一后裔，身负青铜血液。灭国后四海为家，意志消沉，终日以烟斗为伴，过着颓废流浪的生活。'
+            },
+            {
+                id: '02',
+                name: '留几黄',
+                nameEn: 'Liu Jihuang',
+                role: '落魄贵公子 · 钢铁侠',
+                keywords: ['风流', '贵族', '铁骨扇', '隐姓埋名'],
+                file: '人物设计/02_留几黄.md',
+                description: '唐国七义士之一，江南第一富商长子。灭国后流离至北晋开了间酒楼隐姓埋名，但骨子里的贵族习惯总是暴露身份。'
+            },
+            {
+                id: '03',
+                name: '王金鱼',
+                nameEn: 'Wang Jinyu',
+                role: '钢铁之墙 · 悲剧叛徒',
+                keywords: ['光明军统领', '红玉长枪', '全能教走狗'],
+                file: '人物设计/03_王金鱼.md',
+                description: '唐国七义士之首，曾守护皇城数年。灭国后却投奔全能教，成为压迫者。他是真叛徒？还是另有隐情？'
+            },
+            {
+                id: '04',
+                name: '陆俊伟',
+                nameEn: 'Lu Junwei',
+                role: '不死杀神 · 武僧赎罪者',
+                keywords: ['流寇', '金背砍刀', '遁入空门', '压抑暴力'],
+                file: '人物设计/04_陆俊伟.md',
+                description: '唐国七义士之一，原本是铁岭山流寇。灭国后遁入空门，想要逃离过去，但杀戮本能如影随形。'
+            },
+            {
+                id: '05',
+                name: '顾徐',
+                nameEn: 'Gu Xu',
+                role: '鬼军师 · 鬼谷传人',
+                keywords: ['奇门遁甲', '秘术', '神秘', '代价'],
+                file: '人物设计/05_顾徐.md',
+                description: '鬼谷子第81代传人，唐国最重要的军师。每次施法都会消耗寿命，战后头发花白，下落不明。'
+            },
+            {
+                id: '06',
+                name: '唐湘润',
+                nameEn: 'Tang Xiangrun',
+                role: '玉门大将军 · 蛊虫傀儡',
+                keywords: ['边关守将', '噬脑蛊虫', '傀儡', '悲剧'],
+                file: '人物设计/06_唐湘润.md',
+                description: '唐国七义士之一，镇守边关的女将军。被全能教俘虏后，被施以噬脑蛊虫，成为敌人的傀儡。'
+            },
+            {
+                id: '07',
+                name: '沈宇濛',
+                nameEn: 'Shen Yumeng',
+                role: '沈大家 · 情报局长',
+                keywords: ['戏班掌柜', '暗器高手', '双面人生', '多疑'],
+                file: '人物设计/07_沈宇濛.md',
+                description: '京城最大戏法班子的掌柜，实际是大唐情报局的局长。灭国后流亡他乡，永远在伪装和观察。'
+            },
+            {
+                id: '08',
+                name: '砖小小',
+                nameEn: 'Zhuan Xiaoxiao',
+                role: '疯癫天才 · 第一炼金术师',
+                keywords: ['炼金术', '铸剑师', '疯狂', '道德模糊'],
+                file: '人物设计/08_砖小小.md',
+                description: '唐国第一炼金术师和铸剑师。只对作品感兴趣，不在乎为谁工作。灭国后被全能教收纳继续研究。'
+            },
+            {
+                id: '09',
+                name: '龙小希',
+                nameEn: 'Long Xiaoxi',
+                role: '龙御的妹妹 · 白月光',
+                keywords: ['纯洁', '牺牲', '灵魂', '温暖回忆'],
+                file: '人物设计/09_龙小希.md',
+                description: '龙御的妹妹，在皇城被破时因担心哥哥被流箭射死。她是龙御心中永远的痛和温暖。'
+            }
+        ];
+
+        let currentIndex = 0;
+
+        // 初始化
+        function init() {
+            createCards();
+            createThumbnails();
+            initParticles();
+            setTimeout(() => {
+                document.getElementById('loading').classList.add('hidden');
+            }, 500);
+        }
+
+        // 创建卡片
+        function createCards() {
+            const container = document.getElementById('cardContainer');
+            characters.forEach((char, index) => {
+                const card = document.createElement('div');
+                card.className = 'character-card';
+                if (index === 0) card.classList.add('active');
+                else if (index === characters.length - 1) card.classList.add('prev');
+                else card.classList.add('next');
+
+                card.innerHTML = `
+                    <div class="card-content">
+                        <div class="card-left">
+                            <h2>${char.name}</h2>
+                            <div class="role">${char.role}</div>
+                            <div class="keywords">
+                                ${char.keywords.map(k => `<span class="keyword">${k}</span>`).join('')}
+                            </div>
+                            <div class="description">${char.description}</div>
+                        </div>
+                        <div class="card-right">
+                            <div class="design-preview">
+                                <span>设计稿区域（16:9）</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // 创建缩略图
+        function createThumbnails() {
+            const nav = document.getElementById('thumbnailNav');
+            characters.forEach((char, index) => {
+                const thumb = document.createElement('div');
+                thumb.className = 'thumbnail';
+                if (index === 0) thumb.classList.add('active');
+                thumb.textContent = char.name;
+                thumb.onclick = () => jumpToCharacter(index);
+                nav.appendChild(thumb);
+            });
+        }
+
+        // 切换角色
+        function changeCharacter(direction) {
+            const cards = document.querySelectorAll('.character-card');
+            const thumbs = document.querySelectorAll('.thumbnail');
+
+            // 移除当前状态
+            cards[currentIndex].classList.remove('active');
+            thumbs[currentIndex].classList.remove('active');
+
+            // 计算新索引
+            currentIndex = (currentIndex + direction + characters.length) % characters.length;
+
+            // 更新卡片状态
+            cards.forEach((card, index) => {
+                card.classList.remove('active', 'prev', 'next');
+                if (index === currentIndex) {
+                    card.classList.add('active');
+                } else if (index === (currentIndex - 1 + characters.length) % characters.length) {
+                    card.classList.add('prev');
+                } else {
+                    card.classList.add('next');
+                }
+            });
+
+            // 更新缩略图
+            thumbs[currentIndex].classList.add('active');
+        }
+
+        // 跳转到指定角色
+        function jumpToCharacter(index) {
+            const direction = index - currentIndex;
+            if (direction !== 0) {
+                changeCharacter(direction);
+            }
+        }
+
+        // 键盘导航
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') changeCharacter(-1);
+            if (e.key === 'ArrowRight') changeCharacter(1);
+        });
+
+        // 粒子背景
+        function initParticles() {
+            const canvas = document.getElementById('particles');
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            const particles = [];
+            const particleCount = 100;
+
+            for (let i = 0; i < particleCount; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    vx: (Math.random() - 0.5) * 0.5,
+                    vy: (Math.random() - 0.5) * 0.5,
+                    size: Math.random() * 2
+                });
+            }
+
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = 'rgba(201, 169, 97, 0.5)';
+
+                particles.forEach(p => {
+                    p.x += p.vx;
+                    p.y += p.vy;
+
+                    if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+                    if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+
+                requestAnimationFrame(animate);
+            }
+
+            animate();
+
+            window.addEventListener('resize', () => {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            });
+        }
+
+        // 启动
+        init();
+    </script>
+</body>
+</html>
