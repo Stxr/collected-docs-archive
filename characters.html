@@ -185,11 +185,12 @@
             min-height: 0;
         }
 
-        .design-preview::before {
-            content: '16:9 设计稿展示区域';
+        .design-preview.no-image::before {
+            content: '制作中';
             position: absolute;
-            font-size: 1rem;
-            opacity: 0.5;
+            font-size: 2rem;
+            opacity: 0.6;
+            color: #c9a961;
         }
 
         .design-preview img {
@@ -563,8 +564,8 @@
                             </div>
                         </div>
                         <div class="card-right">
-                            <div class="design-preview">
-                                ${char.image ? `<img src="${char.image}" alt="${char.name}设计稿">` : '<span>设计稿区域（16:9）</span>'}
+                            <div class="design-preview ${char.image ? '' : 'no-image'}">
+                                ${char.image ? `<img src="${char.image}" alt="${char.name}设计稿">` : ''}
                             </div>
                             <div class="card-description">${char.description}</div>
                         </div>
