@@ -1,0 +1,59 @@
+name: Deploy Mixed Site to GitHub Pages
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Install dependencies
+        run: cd map && pnpm install
+
+      - name: Build React App
+        run: cd map && pnpm build
+
+      - name: Prepare Staging Area
+        run: |
+          mkdir staging
+          # 1. 复制根目录下所有内容到暂存区，明确排除源码目录
+          rsync -av --exclude='map' --exclude='.git*' --exclude='.github' --exclude='staging' ./ staging/
+          
+          # 2. 确保暂存区的 map 目录是全新的构建产物
+          rm -rf staging/map
+          mkdir -p staging/map
+          cp -r map/dist/* staging/map/
+          
+          # 3. 移除根目录的 .nojekyll 以允许 Jekyll 渲染首页 index.md
+          # 并在 map 目录下添加 .nojekyll 以防万一
+          rm -f staging/.nojekyll
+          mkdir -p staging/map
+          touch staging/map/.nojekyll
+
+      - name: Deploy to gh-pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: staging
+          branch: gh-pages
+          clean: true
+          enable_jekyll: true

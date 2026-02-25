@@ -1,0 +1,7 @@
+# Build artifacts
+map/node_modules/
+map/dist/
+map/.vite/
+
+# OS
+.DS_Store
